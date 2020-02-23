@@ -257,7 +257,7 @@ if __name__ == '__main__':
                   disp.image(image)
                   disp.display()
                   time.sleep(1)		# Wait for display to update
-                  cmd = "/sbin/shutdown -h now"
+                  cmd = "/usr/sbin/sudo /sbin/shutdown -h now"
                   ignored = subprocess.check_output(cmd, shell = True )
                else:
                   oled_shutdown = oled_shutdown - 1	# Subtract 1 second for next time 'round
