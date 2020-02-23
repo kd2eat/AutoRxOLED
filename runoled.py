@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-#
+#  
 #   radiosonde_auto_rx - 'Horus UDP' Receiver Example
 #
 #   Copyright (C) 2019  Mark Jessop <vk5qi@rfhead.net>
