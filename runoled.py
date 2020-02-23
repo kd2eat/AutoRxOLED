@@ -34,6 +34,8 @@ from PIL import ImageDraw
 from PIL import ImageFont
 
 import subprocess
+import RPi.GPIO as GPIO # Import Raspberry Pi GPIO library
+
 
 oled_line1 = ""
 oled_line2 = ""
@@ -41,6 +43,8 @@ oled_line3 = ""
 oled_line4 = ""
 oled_line5 = ""
 oled_line6 = ""
+oled_shutdown = -1
+SHUTDOWN_PIN = 22		# BCM pin 22 == Board pin 15
 
 
 class UDPListener(object):
@@ -164,6 +168,12 @@ def handle_payload_summary(packet):
 
 
 if __name__ == '__main__':
+
+    # Initialize GPIO for shutdown pin
+    GPIO.setwarnings(False) # Ignore warning for now
+    GPIO.setmode(GPIO.BCM) # Use physical pin numbering
+    GPIO.setup(SHUTDOWN_PIN , GPIO.IN, pull_up_down=GPIO.PUD_DOWN) # Set pin 15 to be an input pin and pull down initially
+
     # Raspberry Pi pin configuration:
     RST = None     # on the PiOLED this pin isnt used
     # Note the following are only used with SPI:
@@ -231,7 +241,33 @@ if __name__ == '__main__':
             except:
                SSID = '"None"'
             SSID = SSID[SSID.find('"')+1:SSID.rfind('"')]
-        
+
+            # Shutdown Pin logic
+            if GPIO.input(SHUTDOWN_PIN) != GPIO.HIGH:
+               oled_shutdown = -1			# Button is not pressed, or was released.  No shutdown.
+            else:
+               print("Button pressed")
+               # Button is pressed.  Initiate countdown.
+               if (oled_shutdown == -1):		# When first pressed, set counter to 5 seconds
+                  oled_shutdown = 5			# 5 Seconds to shut down
+               if (oled_shutdown == 0):		# It's time to shut down completely
+                  # Draw a black filled box to clear the image.
+                  draw.rectangle((0,0,width,height), outline=0, fill=0)
+                  # Display image.
+                  disp.image(image)
+                  disp.display()
+                  time.sleep(1)		# Wait for display to update
+                  cmd = "/sbin/shutdown -h now"
+                  ignored = subprocess.check_output(cmd, shell = True )
+               else:
+                  oled_shutdown = oled_shutdown - 1	# Subtract 1 second for next time 'round
+                  oled_line1 = oled_line2
+                  oled_line2 = oled_line3
+                  oled_line3 = oled_line4
+                  oled_line4 = oled_line5
+                  oled_line5 = oled_line6
+                  oled_line6 = "SHUTDOWN"
+            
             # Write two lines of text.
         
             draw.text((x, top),       "IP: " + str(IP),  font=font, fill=255)
