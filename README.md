@@ -18,6 +18,8 @@ Step 2: Pull down AutoRxOLED
    $ make install
 
 Step 3: Install OLED module on Pi
+   - Button wired to pin 15 (GPIO 22) and 5-volt pin (GPIO 17) with a 10k ohm resistor.
+   - OLED wired to SDA / SCL, GND and 3v3 pin
 
 Step 4: Set your pythonpath to the autorx directory.
    $ export PYTHONPATH=/home/pi/src/radiosonde_auto_rx/auto_rx
